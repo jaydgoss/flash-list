@@ -122,7 +122,7 @@ import UIKit
     ///   - incomingOffset: the offset of the new item being added
     ///   - minBound: the position where the first pixel of the ScrollView is drawn
     ///   - correctedScrollOffset: the ScrollView offset corrected after views have been pulled up
-    private func adjustPosition(
+    private func adjustScrollOffset(
         previousMarkerOffset: CGFloat,
         currentMarkerOffset: CGFloat,
         incomingOffset: CGFloat,
@@ -134,17 +134,13 @@ import UIKit
         let scrollView = getScrollView()
         let diff = currentMarkerOffset - previousMarkerOffset
         
-        // diff > 10 is added here becuase small changes cause the ScrollView to jump around.
-        // I don't want to adjust unless the diff is a side a human would meaningfully notice
-        if let scrollView = scrollView, diff > 10, !self.isInitialRender {
-            if minBound > 0 {
-                // We need to perform some other adjustments here. Not sure what they are yet.
-                // I know that the minBound changing breaks everything but beyond that I am pretty
-                // stuck
-                scrollView.contentOffset = CGPoint(x: 0, y: correctedScrollOffset + incomingOffset)
-            } else {
-                scrollView.contentOffset = CGPoint(x: 0, y: correctedScrollOffset + incomingOffset)
-            }
+        if let scrollView = scrollView, !self.isInitialRender {
+//            if minBound > 0 {
+//                // Something needs to change here because its often where things break
+//                scrollView.contentOffset = CGPoint(x: 0, y: correctedScrollOffset + incomingOffset)
+//            } else {
+            scrollView.contentOffset = CGPoint(x: 0, y: scrollView.contentOffset.y + diff)
+//            }
         }
     }
 
@@ -241,7 +237,7 @@ import UIKit
                     }
                     // Only adjust the scroll offset when the position of the marked first item changes
                     if let firstItem = firstItemMarker, firstItem.frame.maxY != previousMarkerOffset {
-                        adjustPosition(
+                        adjustScrollOffset(
                             previousMarkerOffset: previousMarkerOffset,
                             currentMarkerOffset: firstItem.frame.maxY,
                             incomingOffset: cellContainers[0].frame.maxY,
