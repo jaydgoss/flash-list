@@ -46,10 +46,13 @@ import UIKit
     /// Tracks where first pixel is drawn in the visible window
     private var lastMinBound: CGFloat = 0
   
-    private var firstItem: CellContainer? = nil
-  
-    private var previousOffset: CGFloat = -1
+    /// Marks the first Item in the Scroll View
+    private var firstItemMarker: CellContainer? = nil
     
+    /// The position of the item in the Scroll View after insertion / deletion
+    private var previousMarkerOffset: CGFloat = -1
+    
+    /// State that informs us whether this is the first render
     private var isInitialRender: Bool = true
 
     override func layoutSubviews() {
@@ -111,23 +114,36 @@ import UIKit
             .sorted(by: { $0.index < $1.index })
         clearGaps(for: cellContainers)
     }
-  
+    
+    ///  Adjusts the position of the ScrollView based on the position of the initial marker reference point
+    /// - Parameters:
+    ///   - previousMarkerOffset: the position of the first item before it was pushed down by an insertion
+    ///   - currentMarkerOffset: the posotion of the first item after being pushed down by an insertion
+    ///   - incomingOffset: the offset of the new item being added
+    ///   - minBound: the position where the first pixel of the ScrollView is drawn
+    ///   - correctedScrollOffset: the ScrollView offset corrected after views have been pulled up
     private func adjustPosition(
-        previousOffset: CGFloat,
-        currentOffset: CGFloat,
-        nextOffset: CGFloat,
+        previousMarkerOffset: CGFloat,
+        currentMarkerOffset: CGFloat,
+        incomingOffset: CGFloat,
         minBound: CGFloat,
         correctedScrollOffset: CGFloat
     ) {
+        // We can probably pass by reference here in the final draft. Having this loop every time
+        // is sub optimal
         let scrollView = getScrollView()
-        let diff = currentOffset - previousOffset
+        let diff = currentMarkerOffset - previousMarkerOffset
         
+        // diff > 10 is added here becuase small changes cause the ScrollView to jump around.
+        // I don't want to adjust unless the diff is a side a human would meaningfully notice
         if let scrollView = scrollView, diff > 10, !self.isInitialRender {
-            
             if minBound > 0 {
-                scrollView.contentOffset = CGPoint(x: 0, y: correctedScrollOffset + nextOffset)
+                // We need to perform some other adjustments here. Not sure what they are yet.
+                // I know that the minBound changing breaks everything but beyond that I am pretty
+                // stuck
+                scrollView.contentOffset = CGPoint(x: 0, y: correctedScrollOffset + incomingOffset)
             } else {
-                scrollView.contentOffset = CGPoint(x: 0, y: correctedScrollOffset + nextOffset)
+                scrollView.contentOffset = CGPoint(x: 0, y: correctedScrollOffset + incomingOffset)
             }
         }
     }
@@ -152,7 +168,6 @@ import UIKit
             let nextCell = cellContainers[index + 1]
             let nextCellTop = nextCell.frame.minY
             let nextCellLeft = nextCell.frame.minX
-
 
             guard
                 isWithinBounds(
@@ -212,25 +227,29 @@ import UIKit
             updateLastMaxBoundOverall(currentCell: cellContainer, nextCell: nextCell)
         }
         
+        // This was placed here so that offset adjustments would ONLY be performed after
+        // all necessary views were pulled up to remove the white space
         cellContainers.indices.dropLast().forEach { index in
             let cellContainer = cellContainers[index]
-
+            
             if let layoutType = cellContainer.layoutType {
+                // First Item is a hack on the React-Native side so we can know which
+                // item is first in the ScrollView
                 if layoutType == "FIRST_ITEM" {
-                    if firstItem == nil {
-                        firstItem = cellContainer
+                    if firstItemMarker == nil {
+                        firstItemMarker = cellContainer
                     }
-                    if let firstItem = firstItem, firstItem.frame.maxY != previousOffset {
-                        // Make a scrolling adjustment
+                    // Only adjust the scroll offset when the position of the marked first item changes
+                    if let firstItem = firstItemMarker, firstItem.frame.maxY != previousMarkerOffset {
                         adjustPosition(
-                            previousOffset: previousOffset,
-                            currentOffset: firstItem.frame.maxY,
-                            nextOffset: cellContainers[0].frame.maxY,
+                            previousMarkerOffset: previousMarkerOffset,
+                            currentMarkerOffset: firstItem.frame.maxY,
+                            incomingOffset: cellContainers[0].frame.maxY,
                             minBound: minBound,
                             correctedScrollOffset: correctedScrollOffset
                         )
                     }
-                    previousOffset = firstItem?.frame.maxY ?? -1
+                    previousMarkerOffset = firstItemMarker?.frame.maxY ?? -1
                 }
             }
         }
