@@ -326,6 +326,7 @@ class FlashList<T> extends React.PureComponent<
       >
         <ProgressiveListView
           {...restProps}
+          disableRecycling
           ref={this.recyclerRef}
           layoutProvider={this.state.layoutProvider}
           dataProvider={this.state.dataProvider}
@@ -495,6 +496,7 @@ class FlashList<T> extends React.PureComponent<
           ...getCellContainerPlatformStyles(this.props.inverted!!, parentProps),
         }}
         index={parentProps.index}
+        type={parentProps.layoutType.toString()}
       >
         <PureComponentWrapper
           extendedState={parentProps.extendedState}

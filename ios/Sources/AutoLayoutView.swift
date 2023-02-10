@@ -45,11 +45,18 @@ import UIKit
     private var lastMaxBound: CGFloat = 0
     /// Tracks where first pixel is drawn in the visible window
     private var lastMinBound: CGFloat = 0
+  
+    private var firstItem: CellContainer? = nil
+  
+    private var previousOffset: CGFloat = -1
+    
+    private var isInitialRender: Bool = true
 
     override func layoutSubviews() {
         fixLayout()
         fixFooter()
         super.layoutSubviews()
+        self.isInitialRender = false
 
         let scrollView = getScrollView()
         guard enableInstrumentation, let scrollView = scrollView else { return }
@@ -104,6 +111,26 @@ import UIKit
             .sorted(by: { $0.index < $1.index })
         clearGaps(for: cellContainers)
     }
+  
+    private func adjustPosition(
+        previousOffset: CGFloat,
+        currentOffset: CGFloat,
+        nextOffset: CGFloat,
+        minBound: CGFloat,
+        correctedScrollOffset: CGFloat
+    ) {
+        let scrollView = getScrollView()
+        let diff = currentOffset - previousOffset
+        
+        if let scrollView = scrollView, diff > 10, !self.isInitialRender {
+            
+            if minBound > 0 {
+                scrollView.contentOffset = CGPoint(x: 0, y: correctedScrollOffset + nextOffset)
+            } else {
+                scrollView.contentOffset = CGPoint(x: 0, y: correctedScrollOffset + nextOffset)
+            }
+        }
+    }
 
     /// Checks for overlaps or gaps between adjacent items and then applies a correction.
     /// Performance: RecyclerListView renders very small number of views and this is not going to trigger multiple layouts on the iOS side.
@@ -113,8 +140,10 @@ import UIKit
         var maxBoundNextCell: CGFloat = 0
         let correctedScrollOffset = scrollOffset - (horizontal ? frame.minX : frame.minY)
         lastMaxBoundOverall = 0
+      
         cellContainers.indices.dropLast().forEach { index in
             let cellContainer = cellContainers[index]
+          
             let cellTop = cellContainer.frame.minY
             let cellBottom = cellContainer.frame.maxY
             let cellLeft = cellContainer.frame.minX
@@ -181,6 +210,29 @@ import UIKit
                 }
             }
             updateLastMaxBoundOverall(currentCell: cellContainer, nextCell: nextCell)
+        }
+        
+        cellContainers.indices.dropLast().forEach { index in
+            let cellContainer = cellContainers[index]
+
+            if let layoutType = cellContainer.layoutType {
+                if layoutType == "FIRST_ITEM" {
+                    if firstItem == nil {
+                        firstItem = cellContainer
+                    }
+                    if let firstItem = firstItem, firstItem.frame.maxY != previousOffset {
+                        // Make a scrolling adjustment
+                        adjustPosition(
+                            previousOffset: previousOffset,
+                            currentOffset: firstItem.frame.maxY,
+                            nextOffset: cellContainers[0].frame.maxY,
+                            minBound: minBound,
+                            correctedScrollOffset: correctedScrollOffset
+                        )
+                    }
+                    previousOffset = firstItem?.frame.maxY ?? -1
+                }
+            }
         }
 
         lastMaxBound = maxBoundNextCell
