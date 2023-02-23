@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { useFocusEffect } from "@react-navigation/native";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 interface ListItem {
   value: number;
@@ -73,7 +74,8 @@ const List = () => {
           style={{
             ...styles.container,
             backgroundColor,
-            height: item.value % 2 === 0 ? 100 : 200,
+            // height: item.value % 2 === 0 ? 100 : 200,
+            width: item.value % 2 === 0 ? 100 : 200,
           }}
         >
           <Text>Cell Id: {item.value}</Text>
@@ -84,25 +86,31 @@ const List = () => {
 
   return (
     <>
-      <Button
-        title="ADD"
-        onPress={() => {
-          // setTimeout(() => {
-          //   setIsLoading(false);
-          setData([{ value: newItemIndexes++ }, ...data]);
-          // }, 1500);
-          // setIsLoading(true);
+      <TouchableOpacity
+        style={{
+          height: 40,
+          backgroundColor: "purple",
+          justifyContent: "center",
+          alignItems: "center",
         }}
-      />
+        onPress={() => {
+          setData([{ value: newItemIndexes++ }, ...data]);
+        }}
+      >
+        <Text style={{ color: "white", fontWeight: "bold", fontSize: 30 }}>
+          ADD A NEW ITEM
+        </Text>
+      </TouchableOpacity>
+
       <FlashList
         ref={list}
         refreshing={refreshing}
-        onRefresh={() => {
-          setRefreshing(true);
-          setTimeout(() => {
-            setRefreshing(false);
-          }, 2000);
-        }}
+        // onRefresh={() => {
+        //   setRefreshing(true);
+        //   setTimeout(() => {
+        //     setRefreshing(false);
+        //   }, 2000);
+        // }}
         keyExtractor={(item: ListItem) => {
           return item.value.toString();
         }}
@@ -113,6 +121,7 @@ const List = () => {
         estimatedItemSize={100}
         data={data}
         drawDistance={250}
+        horizontal
         // ListHeaderComponent={
         //   <View style={{ height: 100 }}>
         //     <Text>{isLoading ? "LOADING" : ""}</Text>
