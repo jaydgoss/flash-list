@@ -127,6 +127,7 @@ const List = () => {
         //     <Text>{isLoading ? "LOADING" : ""}</Text>
         //   </View>
         // }
+        experimentalMaintainTopContentPosition
       />
     </>
   );
