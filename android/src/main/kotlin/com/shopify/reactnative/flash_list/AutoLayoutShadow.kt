@@ -2,6 +2,7 @@ package com.shopify.reactnative.flash_list
 
 import android.os.Build
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ScrollView
 import androidx.annotation.RequiresApi
 
@@ -23,6 +24,8 @@ class AutoLayoutShadow {
     private var isInitialRender = true
     private var anchorStableId = ""
     private var anchorOffset = 0
+    var pendingCorrection = -1
+    var pendingDiffCalculation = Float.MIN_VALUE
 
     /** Checks for overlaps or gaps between adjacent items and then applies a correction (Only Grid layouts with varying spans)
      * Performance: RecyclerListView renders very small number of views and this is not going to trigger multiple layouts on Android side. Not expecting any major perf issue. */
@@ -100,9 +103,16 @@ class AutoLayoutShadow {
                     val diff = minValue - anchorOffset
                     val currentOffset = scrollView.scrollY
                     val scrollValue = diff + currentOffset
-//                    scrollView.scrollTo(0, scrollValue)
-                    scrollView.scrollY = scrollValue
+
+                    pendingCorrection = scrollValue
+//                    scrollView.translationY =
+                    scrollView.translationY = -diff.toFloat()
                     break
+
+
+//                    scrollView.scrollTo(0, scrollValue)
+//                    scrollView.scrollY = scrollValue
+
                 }
             }
         }
@@ -112,6 +122,19 @@ class AutoLayoutShadow {
         lastMaxBound = maxBoundNeighbour
         lastMinBound = minBound
         isInitialRender = false
+    }
+
+    fun fixContentPosition(scrollView: ScrollView) {
+        if(pendingCorrection != -1) {
+            // Prevent race conditions if scrollView tries to quickly call this
+            // twice
+            scrollView.scrollY = pendingCorrection
+            pendingCorrection = -1
+        }
+        scrollView.translationY = 0f
+
+
+
     }
 
     /** Offset provided by react can be one frame behind the real one, it's important that this method is called with offset taken directly from

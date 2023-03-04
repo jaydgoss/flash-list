@@ -22,6 +22,12 @@ class AutoLayoutView(context: Context) : ReactViewGroup(context) {
 
     var pixelDensity = 1.0
 
+    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+        val scrollView = getParentScrollView()
+        alShadow.fixContentPosition(scrollView as ScrollView)
+        super.onLayout(changed, left, top, right, bottom)
+    }
+
     /** Overriding draw instead of onLayout. RecyclerListView uses absolute positions for each and every item which means that changes in child layouts may not trigger onLayout on this container. The same layout
      * can still cause views to overlap. Therefore, it makes sense to override draw to do correction. */
     override fun dispatchDraw(canvas: Canvas?) {
