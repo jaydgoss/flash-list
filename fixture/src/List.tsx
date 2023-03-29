@@ -120,7 +120,7 @@ const List = () => {
           return item.type;
         }}
         renderItem={renderItem}
-        estimatedItemSize={100}
+        estimatedItemSize={150}
         data={data}
         drawDistance={250}
         // horizontal
