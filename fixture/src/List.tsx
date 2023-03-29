@@ -15,6 +15,8 @@ import { FlashList } from "@shopify/flash-list";
 import { useFocusEffect } from "@react-navigation/native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 
+import { ScrollView } from "./ScrollView";
+
 interface ListItem {
   value: number;
   type?: string;
@@ -128,6 +130,7 @@ const List = () => {
         //   </View>
         // }
         experimentalMaintainTopContentPosition
+        renderScrollComponent={ScrollView}
       />
     </>
   );
