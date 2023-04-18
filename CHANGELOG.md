@@ -7,9 +7,7 @@ and adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-- Add support for `experimentalMaintainTopContentPosition`
-
-- Add support for `experimentalMaintainTopContentPosition`
+- Add support for `experimentalScrollPositionManagement`
   - https://github.com/Shopify/flash-list/issues/547
 
 ## [1.4.3] - 2023-04-24
