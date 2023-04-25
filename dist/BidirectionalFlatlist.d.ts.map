@@ -1,0 +1,1 @@
+{"version":3,"file":"BidirectionalFlatlist.d.ts","sourceRoot":"","sources":["../src/BidirectionalFlatlist.ts"],"names":[],"mappings":"AAAA;;;KAGK;AACL,OAAO,KAAK,EAAE,SAAS,EAAE,MAAM,OAAO,CAAC;AACvC,OAAO,EAAoC,SAAS,EAAE,MAAM,cAAc,CAAC;AAW3E,UAAU,0BAA0B;IAClC,KAAK,EAAE,SAAS,CAAC;IACjB,QAAQ,EAAE,SAAS,CAAC;CACrB;AAID,QAAA,MAAM,qBAAqB,kEACwC,CAAC;AAMpE,OAAO,EAAE,qBAAqB,EAAE,CAAC"}
